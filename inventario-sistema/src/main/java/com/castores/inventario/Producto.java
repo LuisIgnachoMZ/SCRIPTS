@@ -95,10 +95,13 @@ public class Producto {
 
     public List<Producto> obtenerProductosInactivos() {
         List<Producto> productosInactivos = new ArrayList<>();
-        String sql = "SELECT p.producto_id, p.nombre, p.precio, i.cantidad " +
+        String sql = "SELECT p.producto_id, p.nombre, p.precio, " +
+                    "COALESCE(SUM(CASE WHEN i.tipo_movimiento = 'entrada' OR i.tipo_movimiento = 'nuevo' THEN i.cantidad ELSE 0 END), 0) - " +
+                    "COALESCE(SUM(CASE WHEN i.tipo_movimiento = 'salida' THEN i.cantidad ELSE 0 END), 0) AS cantidad_total " +
                     "FROM inventario_sistema.producto p " +
-                    "JOIN inventario_sistema.inventario i ON i.producto_id = p.producto_id " +
-                    "WHERE estatus = 0";  // Cambia el filtro a 'estatus = 0' para productos inactivos
+                    "LEFT JOIN inventario_sistema.inventario i ON i.producto_id = p.producto_id " +
+                    "WHERE p.estatus = 0 " +
+                    "GROUP BY p.producto_id, p.nombre, p.precio";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql);
             ResultSet rs = ps.executeQuery()) {
@@ -106,7 +109,7 @@ public class Producto {
                 int idProducto = rs.getInt("producto_id");
                 String nombre = rs.getString("nombre");
                 int precio = rs.getInt("precio");
-                int cantidad = rs.getInt("cantidad"); 
+                int cantidad = rs.getInt("cantidad_total"); 
                 productosInactivos.add(new Producto(idProducto, nombre, precio, cantidad)); 
             }
         } catch (SQLException e) {
