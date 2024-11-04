@@ -1,4 +1,3 @@
-# SCRIPTS
 # Sistema de Inventario
 
 Este proyecto es un sistema de inventario básico desarrollado en Java, utilizando MySQL como base de datos y Apache Tomcat como servidor de aplicaciones.
